@@ -1,5 +1,5 @@
 # Support
-This repository contains various functions I use for programs
+This repository contains various functions I found on the net and use for programs
 
 # AccurateTimer
 Provides a high resolution based on Multimedia Timer for short intervalls
