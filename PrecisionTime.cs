@@ -33,8 +33,8 @@ namespace Support
             }
         }
 
-        public static DateTime Now => DateTime.FromFileTime(FileTime);
-        public static DateTime UtcNow => DateTime.FromFileTimeUtc(FileTime);
+        public static DateTime Now => IsAvailable ? DateTime.FromFileTime(FileTime) : DateTime.Now;
+        public static DateTime UtcNow => IsAvailable ? DateTime.FromFileTimeUtc(FileTime) : DateTime.UtcNow;
 
         static Timing()
         {
