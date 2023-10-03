@@ -251,7 +251,7 @@ namespace Support
 
         public string GetString(string? Format = null, string? Join = null, int Padleft =0, int PadRight=0)
         {
-            return $"{X.ToString(Format).PadLeft(Padleft).PadRight(PadRight)}{Join ?? ""}{Y.ToString(Format).PadLeft(Padleft).PadRight(PadRight)}{Join ?? ""}{Z.ToString(Format).PadLeft(Padleft).PadRight(PadRight)}{Join ?? ""}{A.ToString(Format).PadLeft(Padleft).PadRight(PadRight)}{Join ?? ""}{B.ToString(Format).PadLeft(Padleft).PadRight(PadRight)}{Join ?? ""}{C.ToString(Format).PadLeft(Padleft).PadRight(PadRight)}{(Scale == 1 ? String.Empty : $"{Join ?? String.Empty}{Scale.ToString(Format).PadLeft(Padleft).PadRight(PadRight)}")}";
+            return $"{X.ToString(Format).PadLeft(Padleft).PadRight(PadRight)}{Join ?? " "}{Y.ToString(Format).PadLeft(Padleft).PadRight(PadRight)}{Join ?? " "}{Z.ToString(Format).PadLeft(Padleft).PadRight(PadRight)}{Join ?? " "}{A.ToString(Format).PadLeft(Padleft).PadRight(PadRight)}{Join ?? " "}{B.ToString(Format).PadLeft(Padleft).PadRight(PadRight)}{Join ?? " "}{C.ToString(Format).PadLeft(Padleft).PadRight(PadRight)}{(Scale == 1 ? String.Empty : $"{Join ?? " "}{Scale.ToString(Format).PadLeft(Padleft).PadRight(PadRight)}")}";
         }
         public Frame GetFrame()
         {
