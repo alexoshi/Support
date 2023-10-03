@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace BallGame
+namespace Support
 {
     public static class SerializeClass
     {
