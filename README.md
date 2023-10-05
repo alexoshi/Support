@@ -9,3 +9,6 @@ Reads system time with higher accuracy than standard DateTime, works on Windows 
 
 # CircularBuffer
 A buffer I use to handle mostly time series data or high frequency data that is not needed after a while
+
+# SerializeClass
+Serialize and Deserialize helper to save options and data
