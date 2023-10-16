@@ -11,6 +11,7 @@ namespace Support
     {
         private Matrix4x4 mat;
         private bool inv = false;
+        private bool scale = false;
         private Matrix4x4 iMat;
 
         public Frame()
@@ -18,6 +19,7 @@ namespace Support
             mat = Matrix4x4.Identity;
             iMat = Matrix4x4.Identity;
             inv = true;
+            scale = false;
         }
 
         public Frame(System.Windows.Media.Media3D.Matrix3D matrix3D)
@@ -96,8 +98,8 @@ namespace Support
             mat.M41 = offsetX;
             mat.M42 = offsetY;
             mat.M43 = offsetZ;
-            mat.M44 = m44;
-
+            mat.M44 = float.IsNaN (m44) ? 1 : m44;
+            scale = !float.IsNaN(m44);
 
             if (!normal && ((MathF.Abs(Vector3.Dot(Nx, Ny)) + MathF.Abs(Vector3.Dot(Nx, Nz))) > 1e-12))
             {
@@ -131,13 +133,13 @@ namespace Support
             set { mat.Translation = value; }
             get { return mat.Translation; }
         }
-        public float Scale => 1.0f / mat.M44;
+        public float Scale => scale ? 1.0f / mat.M44 : float.NaN;
 
         public Frame(Kuka kuka)
         {
             this = new Frame(kuka.X, kuka.Y, kuka.Z, kuka.A, kuka.B, kuka.C, kuka.Scale);
         }
-        public Frame(double x, double y, double z, double a, double b, double c, double scale = 1)
+        public Frame(double x, double y, double z, double a, double b, double c, double scale = double.NaN)
         {
             this = new Kuka(x, y, z, a, b, c, scale).GetFrame();
         }
@@ -173,7 +175,7 @@ namespace Support
         }
     }
 
-    public struct Kuka
+    public class Kuka
     {
         public double X;
         public double Y;
@@ -183,9 +185,55 @@ namespace Support
         public double C;
         public double Scale;
 
-        public Kuka(double x, double y, double z, double a, double b, double c, double scale = 1)
+        public bool ShouldSerializeScale()
+        {
+            return !Double.IsNaN(Scale) && Scale > 0;
+        }
+
+        public Kuka() : this(0,0,0,0,0,0,double.NaN)
+        { }
+        public Kuka(double x, double y, double z, double a, double b, double c, double scale = double.NaN)
         {
             X = x; Y = y; Z = z; A = a; B = b; C = c; Scale = scale;
+        }
+
+        public Kuka(double[] doubles)
+        {
+            X = doubles[0]; Y = doubles[1]; Z = doubles[2]; A = doubles[3]; B = doubles[4]; C = doubles[5];
+            if (doubles.Length > 6)
+                Scale = doubles[6];
+            else
+                Scale = double.NaN;
+        }
+        public void fromArray(double[] doubles)
+        {
+            X = doubles[0]; Y = doubles[1]; Z = doubles[2]; A = doubles[3]; B = doubles[4]; C = doubles[5];
+            if (doubles.Length > 6)
+                Scale = doubles[6];
+            else
+                Scale = double.NaN;
+        }
+        public Kuka(float[] doubles)
+        {
+            X = doubles[0]; Y = doubles[1]; Z = doubles[2]; A = doubles[3]; B = doubles[4]; C = doubles[5];
+            if (doubles.Length > 6)
+                Scale = doubles[6];
+            else
+                Scale = double.NaN;
+        }
+        public double[] toArray()
+        {
+            if (Double.IsNaN(Scale))
+                return new double[] { X, Y, Z, A, B, C };
+
+            return new double[] { X, Y, Z, A, B, C, Scale };
+        }
+        public float[] toArrayF()
+        {
+            if (Double.IsNaN(Scale))
+                return new float[] { (float)X, (float)Y, (float)Z, (float)A, (float)B, (float)C };
+
+            return new float[] { (float)X, (float)Y, (float)Z, (float)A, (float)B, (float)C, (float)Scale };
         }
         public Kuka(Frame asi)
         {
@@ -237,21 +285,24 @@ namespace Support
         {
             string[] split = input.Split(new char[] { ',', ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
 
-            if (split.Length == 6)
-            {
-                this = new Kuka(System.Convert.ToDouble(split[0]), System.Convert.ToDouble(split[1]), System.Convert.ToDouble(split[2]), System.Convert.ToDouble(split[3]), System.Convert.ToDouble(split[4]), System.Convert.ToDouble(split[5]));
-            }
-            else if (split.Length == 7)
-            {
-                this = new Kuka(System.Convert.ToDouble(split[0]), System.Convert.ToDouble(split[1]), System.Convert.ToDouble(split[2]), System.Convert.ToDouble(split[3]), System.Convert.ToDouble(split[4]), System.Convert.ToDouble(split[5]), System.Convert.ToDouble(split[6]));
-            }
-            else
-                throw new ArgumentException(input, nameof(input));
+            //if (split.Length == 6)
+            //{
+            //    //this = new Kuka(System.Convert.ToDouble(split[0]), System.Convert.ToDouble(split[1]), System.Convert.ToDouble(split[2]), System.Convert.ToDouble(split[3]), System.Convert.ToDouble(split[4]), System.Convert.ToDouble(split[5]));
+            //    fromArray(System.Convert.ToDouble(split[0]), System.Convert.ToDouble(split[1]), System.Convert.ToDouble(split[2]), System.Convert.ToDouble(split[3]), System.Convert.ToDouble(split[4]), System.Convert.ToDouble(split[5]));
+            //}
+            //else if (split.Length == 7)
+            //{
+            //    fromArray(System.Convert.ToDouble(split[0]), System.Convert.ToDouble(split[1]), System.Convert.ToDouble(split[2]), System.Convert.ToDouble(split[3]), System.Convert.ToDouble(split[4]), System.Convert.ToDouble(split[5]), System.Convert.ToDouble(split[6]));
+            //}
+            //else
+            //    throw new ArgumentException(input, nameof(input));
+            fromArray(split.Select(x => System.Convert.ToDouble(x)).ToArray());
+
         }
 
-        public string GetString(string? Format = null, string? Join = null, int Padleft =0, int PadRight=0)
+        public string GetString(string? Format = null, string? Join = null, int Padleft = 0, int PadRight = 0)
         {
-            return $"{X.ToString(Format).PadLeft(Padleft).PadRight(PadRight)}{Join ?? " "}{Y.ToString(Format).PadLeft(Padleft).PadRight(PadRight)}{Join ?? " "}{Z.ToString(Format).PadLeft(Padleft).PadRight(PadRight)}{Join ?? " "}{A.ToString(Format).PadLeft(Padleft).PadRight(PadRight)}{Join ?? " "}{B.ToString(Format).PadLeft(Padleft).PadRight(PadRight)}{Join ?? " "}{C.ToString(Format).PadLeft(Padleft).PadRight(PadRight)}{(Scale == 1 ? String.Empty : $"{Join ?? " "}{Scale.ToString(Format).PadLeft(Padleft).PadRight(PadRight)}")}";
+            return $"{X.ToString(Format).PadLeft(Padleft).PadRight(PadRight)}{Join ?? " "}{Y.ToString(Format).PadLeft(Padleft).PadRight(PadRight)}{Join ?? " "}{Z.ToString(Format).PadLeft(Padleft).PadRight(PadRight)}{Join ?? " "}{A.ToString(Format).PadLeft(Padleft).PadRight(PadRight)}{Join ?? " "}{B.ToString(Format).PadLeft(Padleft).PadRight(PadRight)}{Join ?? " "}{C.ToString(Format).PadLeft(Padleft).PadRight(PadRight)}{(Double.IsNaN(Scale) ? String.Empty : $"{Join ?? " "}{Scale.ToString(Format).PadLeft(Padleft).PadRight(PadRight)}")}";
         }
         public Frame GetFrame()
         {
@@ -273,7 +324,7 @@ namespace Support
             double Rzy = cb * sc;
             double Rzz = cb * cc;
 
-            return new Frame((float)Rxx, (float)Ryx, (float)Rzx, (float)Rxy, (float)Ryy, (float)Rzy, (float)Rxz, (float)Ryz, (float)Rzz, (float)X, (float)Y, (float)Z, (float)(1 / Scale), true);
+            return new Frame((float)Rxx, (float)Ryx, (float)Rzx, (float)Rxy, (float)Ryy, (float)Rzy, (float)Rxz, (float)Ryz, (float)Rzz, (float)X, (float)Y, (float)Z, (float)(1.0f / Scale), true);
         }
     }
 }

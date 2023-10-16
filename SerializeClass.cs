@@ -30,7 +30,7 @@ namespace Support
             object? v = serializer.Deserialize(reader);
 
             if (v == null)
-                throw new Exception($"Invalid Imput to read from XML: {Input}");
+                throw new Exception($"Invalid Input to read from XML: {Input}");
 
             return (T)v;
         }
