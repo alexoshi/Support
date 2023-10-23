@@ -165,6 +165,16 @@ namespace Support
         {
             return Vector3.Transform(vector3, mat);
         }
+        public Vector3 Projection(Vector3 vector3)
+        {
+            if (!inv)
+            {
+                Matrix4x4.Invert(mat, out iMat);
+                inv = true;
+            }
+
+            return Vector3.Transform(vector3, iMat);
+        }
         public Frame AppendTransform(Frame frame)
         {
             return new(Matrix4x4.Multiply(frame.mat, mat));
