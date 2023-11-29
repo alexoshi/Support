@@ -197,7 +197,7 @@ namespace Support
 
         public bool ShouldSerializeScale()
         {
-            return !Double.IsNaN(Scale) && Scale > 0;
+            return !Double.IsNaN(Scale);
         }
 
         public Kuka() : this(0,0,0,0,0,0,double.NaN)
