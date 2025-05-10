@@ -35,6 +35,7 @@ namespace Support
 
         public static DateTime Now => IsAvailable ? DateTime.FromFileTime(FileTime) : DateTime.Now;
         public static DateTime UtcNow => IsAvailable ? DateTime.FromFileTimeUtc(FileTime) : DateTime.UtcNow;
+        public static string LogTime => (IsAvailable ? DateTime.FromFileTimeUtc(FileTime) : DateTime.UtcNow).ToString("dd.MM.yyyy HH:mm:ss.fff");
 
         static Timing()
         {
